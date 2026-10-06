@@ -1,0 +1,24 @@
+; Local lab only. Replace CHANGE_ME before use. Do not expose to the Internet.
+[transport-local]
+type=transport
+protocol=udp
+bind=127.0.0.1:5060
+
+[6001]
+type=endpoint
+transport=transport-local
+context=voice-local
+disallow=all
+allow=ulaw,alaw
+auth=6001-auth
+aors=6001
+
+[6001-auth]
+type=auth
+auth_type=userpass
+username=6001
+password=CHANGE_ME
+
+[6001]
+type=aor
+max_contacts=1
