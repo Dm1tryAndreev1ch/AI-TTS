@@ -42,15 +42,15 @@ async def amain_voice(env: dict[str, str], out: Callable[[str], None] = print, *
             from gateway.voice.stt_whisper import WhisperStt
             stt = WhisperStt(env.get("WHISPER_MODEL") or "small")
         if speaker is None:
-            from gateway.voice.tts_piper import PiperSpeaker
+            from gateway.voice.tts_piper import PiperSpeaker, player_from_env
             voice_path = env.get("PIPER_VOICE") or "models/ru_RU-irina-medium.onnx"
-            speaker = PiperSpeaker(voice_path, (env.get("VOICE_PLAYER") or "afplay",))
+            speaker = PiperSpeaker(voice_path, player_from_env(env.get("VOICE_PLAYER")))
         if source is None:
             from gateway.voice.mic import MicSource
             source = MicSource(asyncio.get_running_loop())
     except (ImportError, FileNotFoundError) as exc:
         out(f"Голосовые компоненты недоступны: {exc}. Установите: pip install -e '.[voice]' "
-            f"и скачайте голос (scripts/setup_voice_mac.sh)")
+            f"и скачайте голос (scripts/setup_voice_mac.sh или scripts\\setup_voice_windows.ps1)")
         if own_llm:
             await own_llm.aclose()
         return None

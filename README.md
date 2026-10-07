@@ -6,16 +6,17 @@
 
 | Режим | Команда | Документация |
 |---|---|---|
-| Текст в консоли | `python -m gateway.cli` | [docs/MAC.md](docs/MAC.md) |
-| Голос на ноутбуке (микрофон, динамики) | `python -m gateway.voice_cli` | [docs/MAC.md](docs/MAC.md) |
-| Телефония Asterisk | `python -m gateway.telephony_cli` | [docs/TELEPHONY.md](docs/TELEPHONY.md) |
+| Текст в консоли (macOS) | `python -m gateway.cli` | [docs/MAC.md](docs/MAC.md) |
+| Голос на ноутбуке (macOS) | `python -m gateway.voice_cli` | [docs/MAC.md](docs/MAC.md) |
+| Текст и голос на Windows | `scripts\run_windows.ps1` (`-Mode voice` для голоса) | [docs/WINDOWS.md](docs/WINDOWS.md) |
+| Телефония Asterisk (Linux) | `python -m gateway.telephony_cli` | [docs/TELEPHONY.md](docs/TELEPHONY.md) |
 | Только транспорт (приём аудио, echo) | `docker compose up --build` | ниже |
 
 ## Что реализовано
 
 - `gateway/server.py`, `gateway/audiosocket.py`, `gateway/protocol.py`: TCP-сервер AudioSocket, обработчик на каждый звонок, пасинг аудио 20 мс, лимит подключений, таймаут.
 - `gateway/telephony/`: мост между звонком и голосовым циклом, ресемплинг 8 кГц ↔ 16 кГц.
-- `gateway/voice/`: разбиение речи на реплики, Silero VAD, faster-whisper, Piper, микрофон.
+- `gateway/voice/`: разбиение речи на реплики, Silero VAD, faster-whisper, Piper (проигрывание: winsound, afplay или aplay), микрофон.
 - `gateway/dialog/`: state machine (11 состояний, лимиты повторов, переход к оператору) и валидатор JSON-ответов LLM.
 - `gateway/orchestrator.py`: ведёт один звонок. LLM лишь предлагает намерение и поля; все реплики, кроме ответа 1С, берутся из шаблонов; инструменты вызывает только backend.
 - `gateway/llm_ollama.py`: локальная LLM со структурированным JSON.
@@ -23,7 +24,7 @@
 
 ## Что НЕ реализовано или не проверено
 
-- Всё проверялось тестами с заглушками: реальные Ollama, Silero, faster-whisper, Piper, микрофон, Asterisk, Bitrix24 и 1С в тестах не участвуют. Качество распознавания русской речи и задержки не измерены.
+- Всё проверялось тестами с заглушками: реальные Ollama, Silero, faster-whisper, Piper, микрофон, Asterisk, Bitrix24 и 1С в тестах не участвуют. Качество распознавания русской речи и задержки не измерены. Скрипты для Windows и macOS на реальных машинах не запускались.
 - Перебивание (barge-in): режим полудуплексный.
 - Реальный перевод звонка на оператора в Asterisk (сейчас только фраза, запись в CRM и завершение звонка).
 - Номер звонящего из AudioSocket (агент спрашивает его голосом) и несколько одновременных звонков.
@@ -54,7 +55,7 @@ HTTP-сервис в 1С должен отдавать JSON:
 
 ```sh
 python -m venv .venv
-. .venv/bin/activate
-pip install -e '.[test,voice]'
+. .venv/bin/activate        # Windows: .venv\Scripts\Activate.ps1
+pip install -e '.[test]'
 pytest
 ```
